@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Core.Behaviours;
 using Core.Context;
@@ -19,6 +20,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -169,6 +171,22 @@ namespace Core.Utils
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblyList.ToArray()));
 
             #endregion
+            
+            //    
+            // services.AddRateLimiter(options =>
+            // {
+            //     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            //     
+            //     options.AddPolicy("LOGIN_LIMITER", httpContext =>
+            //         RateLimitPartition.GetFixedWindowLimiter(
+            //             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+            //             factory: _ => new FixedWindowRateLimiterOptions()
+            //             {
+            //                 PermitLimit = 3,
+            //                 Window = TimeSpan.FromSeconds(10)
+            //             }));
+            //
+            // });
 
             #region Pipeline
 
@@ -253,6 +271,8 @@ namespace Core.Utils
             #region Common
 
             app.UseRouting();
+    
+            app.UseRateLimiter();
 
             app.UseAuthentication();
 

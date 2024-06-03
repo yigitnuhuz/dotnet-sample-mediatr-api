@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Threading.RateLimiting;
 using Core.Helpers;
 using Core.Models;
 using Core.Utils;
@@ -38,7 +39,21 @@ namespace Api
             services.AddSingleton<ITokenHelper, TokenHelper>();
 
             #endregion
-
+     
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                
+                options.AddPolicy("LOGIN_LIMITER", httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+                        factory: _ => new FixedWindowRateLimiterOptions()
+                        {
+                            PermitLimit = 3,
+                            Window = TimeSpan.FromSeconds(10)
+                        }));
+           
+            });
             #region Core Configuration
 
             services.ConfigureServices(_coreSettings, GetAssemblies());
@@ -50,6 +65,7 @@ namespace Api
         {
             #region Core Configuration
 
+            
             app.ConfigureApplication(env, _coreSettings);
 
             #endregion

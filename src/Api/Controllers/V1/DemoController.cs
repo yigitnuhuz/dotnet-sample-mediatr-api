@@ -3,6 +3,7 @@ using Core.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Api.Controllers.V1
 {
@@ -16,6 +17,7 @@ namespace Api.Controllers.V1
         /// <returns>
         /// Hello message
         /// </returns>
+        [EnableRateLimiting("LOGIN_LIMITER")]
         [AllowAnonymous]
         [HttpGet("hello")]
         [ProducesResponseType(typeof(string), 200)]
